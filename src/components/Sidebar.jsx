@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { dummyProfileData } from "../assets/assets";
+
 import {
   UserIcon,
   MenuIcon,
@@ -28,7 +29,7 @@ const Sidebar = () => {
     setMobileOpen(false);
   }, [pathname]);
 
-  const role = "ADMIN" || "EMPLOYEE";
+  const role = "" || "EMPLOYEE";
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutGridIcon },
     role === "ADMIN"
