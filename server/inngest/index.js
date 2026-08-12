@@ -2,6 +2,7 @@ import { Inngest } from "inngest";
 import Attendance from "../models/Attendance.js";
 import Employee from "../models/Employee.js";
 import LeaveApplication from "../models/LeaveApplication.js";
+import sendEmail from "../config/nodemailer.js";
 
 // Create Inngest client
 export const inngest = new Inngest({
@@ -35,16 +36,23 @@ const autoCheckOut = inngest.createFunction(
     if (!attendance?.checkOut) {
       // Get employee data
       const employee = await Employee.findById(employeeId);
-
-      if (!employee) {
-        console.log("Employee not found");
-        return;
-      }
-
       // TODO: Send reminder email to employee
-      console.log(
-        `Reminder: ${employee.firstName} ${employee.lastName} has not checked out.`,
-      );
+      await sendEmail({
+        to: employee.email,
+        subject: "Attendence Check-Out Remainder",
+        body: `
+                <div style="max-width: 600px;">
+                    <h2>Hi ${employee.firstName}, 👋</h2>
+                    <p style="font-size: 16px;">You have a check-in in ${employee.department} today:</p>
+                    <p style="font-size: 18px; font-weight: bold; color: #007bff; margin: 8px 0;">${attendance?.checkIn?.toLocaleTimeString()}</p>
+                    <p style="font-size: 16px;">Please make sure to check-out in one hour.</p>
+                    <p style="font-size: 16px;">If you have any questions, please contact your admin.</p>
+                    <br />
+                    <p style="font-size: 16px;">Best Regards,</p>
+                    <p style="font-size: 16px;">EMS</p>
+                </div>
+            `,
+      });
 
       // Wait another 1 hour
       await step.sleepUntil(
@@ -106,6 +114,22 @@ const leaveApplicationReminder = inngest.createFunction(
 
     if (leaveApplication?.status === "PENDING") {
       const employee = await Employee.findById(leaveApplicationId);
+
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: `Leave Application Remainder`,
+        body:`
+            <div style="max-width: 600px;">
+                <h2>Hi Admin, 👋</h2>
+                <p style="font-size: 16px;">You have a leave application in ${employee.department} today:</p>
+                <p style="font-size: 18px; font-weight: bold; color: #007bff; margin: 8px 0;">${leaveApplication?.startDate?.toLocaleDateString()}</p>
+                <p style="font-size: 16px;">Please make sure to take action on this leave application.</p>
+                <br />
+                <p style="font-size: 16px;">Best Regards,</p>
+                <p style="font-size: 16px;">EMS</p>
+            </div>
+        `
+      })
     }
   },
 );
@@ -189,13 +213,28 @@ const attendanceReminderCron = inngest.createFunction(
       (emp) => !onLeaveIds.includes(emp._id) && !checkedInIds.includes(emp._id),
     );
 
-    console.log(`Found ${absentEmployees.length} absent employees`);
-
     // Step 6: Send reminder emails
     if (absentEmployees.length > 0) {
       await step.run("send-reminder-emails", async () => {
         const emailPromises = absentEmployees.map((emp) => {
           // TODO: Send email here
+          sendEmail({
+            to: emp.email,
+            subject:`Attendance Remainder - Please Mark Your Attendance`,
+            body: `
+                            <div style="max-width: 600px; font-family: Arial, sans-serif;">
+                                <h2>Hi ${emp.firstName}, 👋</h2>
+                                <p style="font-size: 16px;">We noticed you haven't marked your attendance yet today.</p>
+                                <p style="font-size: 16px;">The deadline was <strong>11:30 AM</strong> and your attendance is still missing.</p>
+                                <p style="font-size: 16px;">Please check in as soon as possible or contact your admin if you're facing any issues.</p>
+                                <br />
+                                <p style="font-size: 14px; color: #666;">Department: ${emp.department}</p>
+                                <br />
+                                <p style="font-size: 16px;">Best Regards,</p>
+                                <p style="font-size: 16px;"><strong>QuickEMS</strong></p>
+                            </div>
+                        `
+          })
         });
       });
     }
