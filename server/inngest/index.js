@@ -113,8 +113,7 @@ const leaveApplicationReminder = inngest.createFunction(
       await LeaveApplication.findById(leaveApplicationId);
 
     if (leaveApplication?.status === "PENDING") {
-      const employee = await Employee.findById(leaveApplicationId);
-
+     const employee = await Employee.findById(leaveApplication.employeeId);
       await sendEmail({
         to: process.env.ADMIN_EMAIL,
         subject: `Leave Application Remainder`,
