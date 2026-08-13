@@ -1,5 +1,3 @@
-
-
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -37,7 +35,6 @@ export const login = async (req, res) => {
       role: user.role,
       email: user.email,
     };
-   
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -49,7 +46,13 @@ export const login = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({ error: "Login failed" });
+    return res.status(500).json({
+      error: "Login failed",
+    });
+    return res.status(500).json({
+      error: "Login failed",
+      message: error.message,
+    });
   }
 };
 
@@ -93,14 +96,13 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    const  hashed = await bcrypt.hash(newPassword, 10);
-    await User.findByIdAndUpdate(session.userId,{password:hashed})
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.findByIdAndUpdate(session.userId, { password: hashed });
 
     return res.json({
       success: true,
     });
   } catch (error) {
-    
     return res.status(500).json({
       error: "Failed to change password",
     });

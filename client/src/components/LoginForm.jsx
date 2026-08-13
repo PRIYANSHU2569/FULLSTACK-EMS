@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import LoginLeftSide from "./LoginLeftSide";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import toast from "react-hot-toast";
 
 const LoginForm = ({ role, title, subtitle }) => {
   const [email, setEmail] = useState("");
@@ -9,9 +11,23 @@ const LoginForm = ({ role, title, subtitle }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await login(email, password, role);
+      navigate("/dashboard");
+    } catch (error) {
+     
+        toast.error(error.response?.data?.error || error.message || "Login failed");
+      
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -59,6 +75,7 @@ const LoginForm = ({ role, title, subtitle }) => {
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="pr-11"
@@ -77,12 +94,14 @@ const LoginForm = ({ role, title, subtitle }) => {
                 </button>
               </div>
             </div>
-                  <button type="submit" disabled ={loading}
-                  className="w-full py-3 bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-md text-sm font-semibold hover:from-indigo-700 hover:to-indigo-600 disabled:opacity-50 transition-all duration-200 shadow-lg shadow-indigo-500/25 active:scale-[0.98]flex items-centre justify-centre">
-                    {loading && <Loader2Icon className="animate-spin h-4 w-4 mr-2"/>}
-                    Sign In
-
-                  </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-linear-to-r from-indigo-600 to-indigo-500 text-white rounded-md text-sm font-semibold hover:from-indigo-700 hover:to-indigo-600 disabled:opacity-50 transition-all duration-200 shadow-lg shadow-indigo-500/25 active:scale-[0.98] flex items-center justify-center"
+            >
+              {loading && <Loader2Icon className="animate-spin h-4 w-4 mr-2" />}
+              Sign In
+            </button>
           </form>
         </div>
       </div>

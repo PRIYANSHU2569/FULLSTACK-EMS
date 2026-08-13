@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
       const { data } = await api.get("/auth/session");
 
       setUser(data.user);
-      setToken(storedToken);
+      // setToken(storedToken);
     } catch (error) {
       // Token is invalid, clear it
       localStorage.removeItem("token");
