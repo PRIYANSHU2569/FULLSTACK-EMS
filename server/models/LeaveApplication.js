@@ -7,6 +7,11 @@ const leaveApplicationSchema = new mongoose.Schema(
       ref: "Employee",
       required: true,
     },
+    type: {
+  type: String,
+  enum: ["CASUAL", "SICK", "ANNUAL"],
+  required: true,
+},
 
     startDate: {
       type: Date,

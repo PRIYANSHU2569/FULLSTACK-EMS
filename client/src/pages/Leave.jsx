@@ -10,18 +10,30 @@ import {
 } from "lucide-react";
 import LeaveHistory from "../components/leave/LeaveHistory.jsx";
 import ApplyLeaveModal from "../components/leave/ApplyLeaveModal.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+import api from "../api/axios.js";
+import { toast } from "react-hot-toast";
 
 const Leave = () => {
+  const { user } = useAuth();
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+ 
   const [isDeleted, setIsDeleted] = useState(false);
-  const isAdmin = true;
-  const fetchLeaves = useCallback(() => {
-    setLeaves(dummyLeaveData);
-    setTimeout(() => {
+  const isAdmin = user?.role === "ADMIN";
+ 
+
+  const fetchLeaves = useCallback(async () => {
+    try {
+      const res = await api.get("/leave");
+      setLeaves(res.data.data || []);
+      setIsDeleted(res.data.employee?.isDeleted || false);
+    } catch (error) {
+      toast.error(error?.response?.data?.error || error.message);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }, []);
 
   useEffect(() => {
@@ -38,7 +50,7 @@ const Leave = () => {
   const annualCount = approvedLeaves.filter((l) => l.type === "ANNUAL").length;
 
   const leavesStats = [
-    { label: "Sick Leaves",  value: sickCount, icon: ThermometerIcon },
+    { label: "Sick Leaves", value: sickCount, icon: ThermometerIcon },
     { label: "Casual Leaves", value: casualCount, icon: UmbrellaIcon },
     { label: "Annual Leaves", value: annualCount, icon: PalmtreeIcon },
   ];
@@ -54,9 +66,12 @@ const Leave = () => {
               : "Your leave history and requests"}
           </p>
         </div>
-        {!isAdmin && !isDeleted && (
+        {!isAdmin &&  (
           <button
-            onClick={() => setShowModal(true)}
+           onClick={() => {
+    console.log("APPLY BUTTON CLICKED");
+    setShowModal(true);
+  }}
             className="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
           >
             <PlusIcon className="h-4 w-4" />
@@ -77,15 +92,23 @@ const Leave = () => {
               </div>
               <div>
                 <p className="text-sm text-slate-500">{s.label}</p>
-                <p className="text-2xl font-bold text-slate-900 tracking-tight">{s.value} <span className="text-sm font-normal text-slate-400">
-                  taken</span></p>
+                <p className="text-2xl font-bold text-slate-900 tracking-tight">
+                  {s.value}{" "}
+                  <span className="text-sm font-normal text-slate-400">
+                    taken
+                  </span>
+                </p>
               </div>
             </div>
           ))}
         </div>
       )}
-      <LeaveHistory leaves= {leaves} isAdmin={isAdmin} onUpdate={fetchLeaves}/>
-      <ApplyLeaveModal open= {showModal} onClose={()=>setShowModal(false)} onSuccess={fetchLeaves}/>
+      <LeaveHistory leaves={leaves} isAdmin={isAdmin} onUpdate={fetchLeaves} />
+      <ApplyLeaveModal
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        onSuccess={fetchLeaves}
+      />
     </div>
   );
 };

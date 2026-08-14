@@ -1,14 +1,53 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DEPARTMENTS } from "../assets/assets";
-import { Loader2Icon } from "lucide-react";
-
+import { Loader2Icon, TableRowsSplit } from "lucide-react";
+import { toast } from "react-hot-toast";
+import api from "../api/axios";
 const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const isEditMode = !!initialData;
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+
+    if (isEditMode) {
+      const pwd = formData.get("password");
+
+      if (!pwd) {
+        formData.delete("password");
+      }
+    }
+
+    try {
+      const url = isEditMode ? `/employees/${initialData.id}` : "/employees";
+
+      const method = isEditMode ? "put" : "post";
+
+      await api[method](url, formData);
+
+      toast.success(
+        isEditMode
+          ? "Employee updated successfully"
+          : "Employee created successfully",
+      );
+
+      onSuccess ? onSuccess() : navigate("/employees");
+    } catch (error) {
+      console.error("Employee submit error:", error);
+
+      toast.error(
+        error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,20 +100,26 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
               name="bio"
               defaultValue={initialData?.bio}
               rows={3}
-              className="resize-none" placeholder="Brief description..."
+              className="resize-none"
+              placeholder="Brief description..."
             />
           </div>
         </div>
       </div>
       {/*Employment Details*/}
       <div className="card p-5 sm:p-6">
-        <h3 className="text-base font-medium text-slate-900 mb-6 pb-4 border-b border-slate-100">Employment Details</h3>
+        <h3 className="text-base font-medium text-slate-900 mb-6 pb-4 border-b border-slate-100">
+          Employment Details
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm text-slate-700">
           <div>
             <label className="block mb-2">Department</label>
-            <select name="department" defaultValue={initialData?.department || ""}>
+            <select
+              name="department"
+              defaultValue={initialData?.department || ""}
+            >
               <option value="">Select Department</option>
-              {DEPARTMENTS.map((deptName)=>(
+              {DEPARTMENTS.map((deptName) => (
                 <option key={deptName} value={deptName}>
                   {deptName}
                 </option>
@@ -92,46 +137,52 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
           <div>
             <label className="block mb-2">Basic Salary</label>
             <input
-            type="number"
+              type="number"
               name="basicSalary"
-              required min="0" step="0.01"
-              defaultValue={initialData?.basicSalary||0}
+              required
+              min="0"
+              step="0.01"
+              defaultValue={initialData?.basicSalary || 0}
             />
           </div>
-           <div>
+          <div>
             <label className="block mb-2">Allowances</label>
             <input
-            type="number"
-              name="basicSalary"
-              required min="0" step="0.01"
-              defaultValue={initialData?.allowances||0}
+              type="number"
+              name="allowances"
+              required
+              min="0"
+              step="0.01"
+              defaultValue={initialData?.allowances || 0}
             />
           </div>
-           <div>
+          <div>
             <label className="block mb-2">Deductions</label>
             <input
-            type="number"
-              name="basicSalary"
-              required min="0" step="0.01"
-              defaultValue={initialData?.deductions||0}
+              type="number"
+              name="deductions"
+              required
+              min="0"
+              step="0.01"
+              defaultValue={initialData?.deductions || 0}
             />
           </div>
-          {isEditMode &&(
-             <div>
-            <label className="block mb-2">Status</label>
-            <select
-              name="employmentStatus"
-              defaultValue={initialData?.employmentStatus}
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-          </div>
+          {isEditMode && (
+            <div>
+              <label className="block mb-2">Status</label>
+              <select
+                name="employmentStatus"
+                defaultValue={initialData?.employmentStatus}
+              >
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
           )}
         </div>
       </div>
-       {/*account setup*/}
-        <div className="card p-5 sm:p-6">
+      {/*account setup*/}
+      <div className="card p-5 sm:p-6">
         <h3 className="text-base font-medium text-slate-900  mb-6  pb-4 border-b border-slate-100">
           Account Setup
         </h3>
@@ -139,56 +190,59 @@ const EmployeeForm = ({ initialData, onSuccess, onCancel }) => {
           <div className="sm:col-span-2">
             <label className="block mb-2">Work Email</label>
             <input
-            type="email"
+              type="email"
               name="email"
               required
               defaultValue={initialData?.email}
             />
           </div>
-          {!isEditMode &&(
+          {!isEditMode && (
             <div>
-            <label className="block mb-2">Temporary Password</label>
-            <input
-            type="password"
-              name="password"
-              required
-            />
-          </div>
+              <label className="block mb-2">Temporary Password</label>
+              <input type="password" name="password" required />
+            </div>
           )}
-          {isEditMode &&(
+          {isEditMode && (
             <div>
-            <label className="block mb-2">Change Password(Optional)</label>
-            <input
-            type="password"
-              name="password"
-              placeholder="Leave blank to keep current"
-            
-            />
-          </div>
+              <label className="block mb-2">Change Password(Optional)</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Leave blank to keep current"
+              />
+            </div>
           )}
           <div>
             <label className="block mb-2">System Role</label>
             <select
               name="role"
-              defaultValue={initialData?.user?.role ||"EMPLOYEE"}>
-                <option value="EMPLOYEE">Employee</option>
-                <option value="ADMIN">Admin</option>
+              defaultValue={initialData?.user?.role || "EMPLOYEE"}
+            >
+              <option value="EMPLOYEE">Employee</option>
+              <option value="ADMIN">Admin</option>
             </select>
           </div>
         </div>
       </div>
 
-        {/*buttons*/}
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
-          <button type="button" className="btn-secondary" onClick={()=>(onCancel? onCancel():navigate(-1))}>
+      {/*buttons*/}
+      <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => (onCancel ? onCancel() : navigate(-1))}
+        >
           Cancel
-          </button>
-           <button type="submit" disabled={loading} className="btn-primary flex items-center justify-center">
-            {loading &&<Loader2Icon className="w-4 h-4 mr-2 animate-spin"/>}
-            {isEditMode ? "Update Employee" :"Create Employee"}
-         
-          </button>
-        </div>
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary flex items-center justify-center"
+        >
+          {loading && <Loader2Icon className="w-4 h-4 mr-2 animate-spin" />}
+          {isEditMode ? "Update Employee" : "Create Employee"}
+        </button>
+      </div>
     </form>
   );
 };

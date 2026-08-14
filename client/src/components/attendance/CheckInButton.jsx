@@ -1,16 +1,27 @@
 import { Loader2Icon, LogOutIcon } from "lucide-react";
 import React from "react";
 import { useState } from "react";
+import api from "../../api/axios";
+import { toast } from "react-hot-toast";
 
 const CheckInButton = ({ todayRecord, onAction }) => {
   const [loading, setLoading] = useState(false);
 
   const handleAttendance = async () => {
     setLoading(true);
-    setTimeout(() => {
-      onAction();
+
+    try {
+      await api.post("/attendance");
+      await onAction();
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.error ||
+          error?.message ||
+          "Attendance action failed",
+      );
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
   if (todayRecord?.checkOut) {
     return (
@@ -22,11 +33,14 @@ const CheckInButton = ({ todayRecord, onAction }) => {
       </div>
     );
   }
-  const isCheckedIn = !!todayRecord?.isCheckedIn;
+  const isCheckedIn = !!todayRecord?.checkIn;
 
   return (
     <div className="absolute bottom-4 right-4 flex flex-col z-1">
-      <button onClick={handleAttendance} className={`w-full max-w-xs flex justify-between items-center gap-8 p-4 rounded-xl bg-linear-to-br text-white ${isCheckedIn ? "from-slate-700 to-slate-900" :"from-indigo-600 to-indigo-700"}`}>
+      <button
+        onClick={handleAttendance}
+        className={`w-full max-w-xs flex justify-between items-center gap-8 p-4 rounded-xl bg-linear-to-br text-white ${isCheckedIn ? "from-slate-700 to-slate-900" : "from-indigo-600 to-indigo-700"}`}
+      >
         {loading ? (
           <Loader2Icon className="animate-spin size-7" />
         ) : isCheckedIn ? (

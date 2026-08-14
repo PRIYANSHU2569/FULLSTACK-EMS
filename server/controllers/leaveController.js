@@ -30,7 +30,7 @@ export const createLeave = async (req, res) => {
       return res.status(400).json({error: "Leave dates must be in the future"});
 
     }
-    if(new Date(endDate)<new date (startDate)){
+    if(new Date(endDate)<new Date (startDate)){
       return res.status(400).json({error : "Leave dates must be in the future "});
 
     }
@@ -40,12 +40,12 @@ export const createLeave = async (req, res) => {
       employeeId: employee._id,
       type,
       startDate : new Date(startDate),
-      endDate : new date(endDate),
+      endDate : new Date(endDate),
       reason,
       status : "PENDING",
     });
     await inngest.send({
-      name:"leave/pemding",
+      name:"leave/pending",
       data:{leaveApplicationId: leave._id}
     })
 
@@ -54,10 +54,12 @@ export const createLeave = async (req, res) => {
       data : leave,
     });
   } catch (error) {
-    return res.status(500).json({
-      error: "Failed",
-    });
-  }
+  console.error("CREATE LEAVE ERROR:", error);
+
+  return res.status(500).json({
+    error: error.message,
+  });
+}
 };
 
 //Get leave
@@ -115,13 +117,19 @@ export const updateLeaveStatus = async (req, res) => {
       return res.status(400).json({error : "Invalid status"});
     }
 
-    const leave = await LeaveApplication.findByIdAndUpdate(req.params.id , {status}, {returnDocument : "after"})
+    const leave = await LeaveApplication.findByIdAndUpdate(req.params.id , {status}, { returnDocument: "after" })
+    if (!leave) {
+  return res.status(404).json({
+    error: "Leave application not found",
+  });
+}
 
-    return res,json({success: true , data: leave})
+    return res.json({success: true , data: leave})
 
   } catch (error) {
+    console.error("UPDATE LEAVE ERROR:", error);
     return res.status(500).json({
-      error: "Failed",
+       error: error.message,
     });
   }
 };
