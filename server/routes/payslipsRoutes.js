@@ -1,11 +1,20 @@
-import {Router} from "express";
-import { createPayslip, getPayslipById, getPayslips } from "../controllers/payslipController.js";
+import { Router } from "express";
+import {
+  createPayslip,
+  getPayslipById,
+  getPayslips,
+} from "../controllers/payslipController.js";
 import { protect, protectAdmin } from "../middleware/auth.js";
 
 const payslipRouter = Router();
 
-payslipRouter.post("/", protect, protectAdmin,createPayslip)
-payslipRouter.post("/", protect, getPayslips)
-payslipRouter.post("/", protect, getPayslipById)
+// Create payslip
+payslipRouter.post("/", protect, protectAdmin, createPayslip);
 
-export default payslipRouter
+// Get all payslips
+payslipRouter.get("/", protect, getPayslips);
+
+// Get single payslip
+payslipRouter.get("/:id", protect, getPayslipById);
+
+export default payslipRouter;

@@ -5,17 +5,26 @@ import Loading from "../components/Loading";
 import { Lock } from "lucide-react";
 import ProfileForm from "../components/ProfileForm";
 import ChangePasswordModal from "../components/ChangePasswordModal";
+import { useAuth } from "../context/AuthContext";
+import api from "../api/axios";
+import { toast } from "react-hot-toast";
 
 const Settings = () => {
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const fetchProfile = async () => {
-    setProfile(dummyProfileData);
-    setTimeout(() => {
+    try {
+      const res = await api.get("/profile");
+      const profile = res.data;
+      if (profile) setProfile(profile);
+    } catch (err) {
+      toast.error(err?.response?.data?.error || err?.message);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   useEffect(() => {
@@ -40,7 +49,7 @@ const Settings = () => {
 
       <div className="card max-w-md p-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p.2.5 bg-slate-100 rounded-lg">
+          <div className="p-2.5 bg-slate-100 rounded-lg">
             <Lock className="w-5 h-5 text-slate-600" />
           </div>
           <div>
@@ -57,7 +66,10 @@ const Settings = () => {
           Change
         </button>
       </div>
-      <ChangePasswordModal open={showPasswordModal} onClose={()=> setShowPasswordModal(false)}/>
+      <ChangePasswordModal
+        open={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+      />
     </div>
   );
 };

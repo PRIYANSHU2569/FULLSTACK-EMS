@@ -1,14 +1,31 @@
 import { Loader2, Save, User } from "lucide-react";
 import React from "react";
 import { useState } from "react";
+import api from "../api/axios";
 const ProfileForm = ({ initialData, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  setMessage("");
+
+  const formData = new FormData(e.currentTarget);
+
+  try {
+    await api.post("/profile", formData);
+
+    setMessage("Profile updated successfully");
+    onSuccess?.();
+  } catch (err) {
+    setError(err.response?.data?.error || err.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="card p-5 sm:p-6 mb-6">
@@ -19,7 +36,7 @@ const ProfileForm = ({ initialData, onSuccess }) => {
       {error && (
         <div className="bg-rose-50 text-rose-700 p-4 rounded-xl text-sm border border-rose-200 mb-6 flex items-start gap-3">
           <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-1.5 shrink-0" />
-          {errror}
+          {error}
         </div>
       )}
        {message && (

@@ -5,34 +5,53 @@ import Employee from "../models/Employee.js";
 // POST /api/payslips
 export const createPayslip = async (req, res) => {
   try {
-    const { employeeId, month, year, basicSalary, allowances, deductions } =
-      req.body;
+    const {
+      employeeId,
+      month,
+      year,
+      basicSalary,
+      allowances,
+      deductions,
+    } = req.body;
 
     if (!employeeId || !month || !year || !basicSalary) {
       return res.status(400).json({
         error: "Missing fields",
       });
     }
+
     const netSalary =
-      Number(basicSalary) + Number(allowances || 0) - Number(deductions || 0);
+      Number(basicSalary) +
+      Number(allowances || 0) -
+      Number(deductions || 0);
 
     const payslip = await Payslip.create({
       employeeId,
       month: Number(month),
       year: Number(year),
       basicSalary: Number(basicSalary),
-      allowances: Number(allowances) || 0,
-      deductions: Number(deductions) || 0,
+      allowances: Number(allowances || 0),
+      deductions: Number(deductions || 0),
       netSalary,
     });
 
-    return res.json({
+    return res.status(201).json({
       success: true,
       data: payslip,
     });
   } catch (error) {
+    
+
+    // Duplicate payslip
+    if (error.code === 11000) {
+      return res.status(400).json({
+        error:
+          "Payslip already exists for this employee for this month and year.",
+      });
+    }
+
     return res.status(500).json({
-      error: "Failed",
+      error: error.message,
     });
   }
 };
@@ -44,13 +63,14 @@ export const getPayslips = async (req, res) => {
     const session = req.session;
 
     // Admin can see all payslips
-    const isAdmin = session.role === "ADMIN";
     if (session.role === "ADMIN") {
       const payslips = await Payslip.find()
         .populate("employeeId")
         .sort({ createdAt: -1 });
+
       const data = payslips.map((p) => {
         const obj = p.toObject();
+
         return {
           ...obj,
           id: obj._id.toString(),
@@ -58,18 +78,33 @@ export const getPayslips = async (req, res) => {
           employeeId: obj.employeeId?._id?.toString(),
         };
       });
+
       return res.json(data);
-    } else {
-      const employee = await Employee.findOne({ userId: session.userId });
-      if (!employee) return res.status(404).json({ error: "Not found" });
-      const payslips = (await Payslip.find({ employeeId: employee._id })).sort({
-        createdAt: -1,
-      });
-      return res.json({ data: payslips });
     }
+
+    // Employee can see only their payslips
+    const employee = await Employee.findOne({
+      userId: session.userId,
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        error: "Not found",
+      });
+    }
+
+    const payslips = await Payslip.find({
+      employeeId: employee._id,
+    }).sort({ createdAt: -1 });
+
+    return res.json({
+      data: payslips,
+    });
   } catch (error) {
+    console.error("GET PAYSLIPS ERROR:", error);
+
     return res.status(500).json({
-      error: "Failed",
+      error: error.message,
     });
   }
 };
@@ -87,17 +122,19 @@ export const getPayslipById = async (req, res) => {
         error: "Payslip not found",
       });
     }
-    const result= {
+
+    const result = {
       ...payslip,
       id: payslip._id.toString(),
       employee: payslip.employeeId,
-
-    }
+    };
 
     return res.json(result);
   } catch (error) {
+    console.error("GET PAYSLIP ERROR:", error);
+
     return res.status(500).json({
-      error: "Failed",
+      error: error.message,
     });
   }
 };
