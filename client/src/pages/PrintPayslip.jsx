@@ -12,7 +12,11 @@ const PrintPayslip = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get(`/payslips/${id}`).then((res)=>setPayslip(res.data)).catch(console.error).finally(()=>setLoading(false))
+    api
+      .get(`/payslips/${id}`)
+      .then((res) => setPayslip(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return <Loading />;
@@ -75,32 +79,44 @@ const PrintPayslip = () => {
               <th className="text-left py-3 px-4 text-xs text-slate-500 uppercase tracking-wider">
                 Description
               </th>
-              <th className="text-right py-3 px-4 text-xs text-slate-500 uppercase tracking-wider">Amount</th>
+              <th className="text-right py-3 px-4 text-xs text-slate-500 uppercase tracking-wider">
+                Amount
+              </th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-t border-slate-100">
               <td className="py-3 px-4 text-slate-700">Basic Salary</td>
-              <td className="text-right py-3 px-4 text-slate-900 font-medium">${payslip.basicSalary?.toLocaleString()}</td>
+              <td className="text-right py-3 px-4 text-slate-900 font-medium">
+                ${payslip.basicSalary?.toLocaleString()}
+              </td>
             </tr>
             <tr className="border-t border-slate-100">
               <td className="py-3 px-4 text-slate-700">Allowances</td>
-              <td className="text-right py-3 px-4 text-slate-900 font-medium">+${payslip.allowances?.toLocaleString()}</td>
+              <td className="text-right py-3 px-4 text-slate-900 font-medium">
+                +${payslip.allowances?.toLocaleString()}
+              </td>
             </tr>
-             <tr className="border-t border-slate-100">
+            <tr className="border-t border-slate-100">
               <td className="py-3 px-4 text-slate-700">Deductions</td>
-              <td className="text-right py-3 px-4 text-slate-900 font-medium">-${payslip.deductions?.toLocaleString()}</td>
+              <td className="text-right py-3 px-4 text-slate-900 font-medium">
+                -${payslip.deductions?.toLocaleString()}
+              </td>
             </tr>
-             <tr className="border-t border-slate-100">
+            <tr className="border-t border-slate-100">
               <td className="py-3 px-4 text-slate-900">Net Salary</td>
-              <td className="text-right py-4 px-4 text-slate-900 font-bold text-lg">-${payslip.netSalary?.toLocaleString()}</td>
+              <td className="text-right py-4 px-4 text-slate-900 font-bold text-lg">
+                -${payslip.netSalary?.toLocaleString()}
+              </td>
             </tr>
           </tbody>
         </table>
-
       </div>
       <div className="text-center">
-        <button className="btn-primary print:hidden" onClick={()=>window.print()}>
+        <button
+          className="btn-primary print:hidden"
+          onClick={() => window.print()}
+        >
           Print Payslip
         </button>
       </div>
