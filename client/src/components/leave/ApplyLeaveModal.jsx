@@ -4,7 +4,6 @@ import api from "../../api/axios";
 import toast from "react-hot-toast";
 
 const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
- 
   const [loading, setLoading] = React.useState(false);
   const today = new Date();
   const tommorrow = new Date(today);
@@ -13,20 +12,18 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true)
-    const formData = new FormData(e.currentTarget)
-    const data = Object.fromEntries(formData.entries())
-    try{
-      await api.post('/leave',data)
-      onSuccess()
+    setLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+    try {
+      await api.post("/leave", data);
+      onSuccess();
       onClose();
-    }catch(error){
+    } catch (error) {
       console.log("LEAVE ERROR STATUS:", error.response?.status);
-  console.log("LEAVE ERROR DATA:", error.response?.data);
+      console.log("LEAVE ERROR DATA:", error.response?.data);
 
-  toast.error(
-    error.response?.data?.error || "Failed to apply for leave"
-  );
+      toast.error(error.response?.data?.error || "Failed to apply for leave");
     }
   };
   if (!open) return null;
@@ -56,12 +53,12 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
             <X className="w-5 h-5" />
           </button>
         </div>
-         {/**----Form------ */}
-         <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        {/**----Form------ */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/**----leave type------ */}
           <div>
             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-              <FileText className="w-4 h-4 text-slate-400"/>
+              <FileText className="w-4 h-4 text-slate-400" />
               Leave Type
             </label>
             <select name="type" required>
@@ -72,44 +69,57 @@ const ApplyLeaveModal = ({ open, onClose, onSuccess }) => {
           </div>
           {/**----duration------ */}
           <div>
-             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
-              <CalendarDays className="w-4 h-4 text-slate-400"/>
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+              <CalendarDays className="w-4 h-4 text-slate-400" />
               Duaration
             </label>
             <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="block text-xs text-slate-400">
-                          From
-                  </span>
-                  <input type="date" name="startDate" required min={minDate} />
-                </div>
-                <div>
-                  <span className="block text-xs text-slate-400">
-                          To
-                  </span>
-                  <input type="date" name="endDate" required min={minDate} />
-                </div>
+              <div>
+                <span className="block text-xs text-slate-400">From</span>
+                <input type="date" name="startDate" required min={minDate} />
+              </div>
+              <div>
+                <span className="block text-xs text-slate-400">To</span>
+                <input type="date" name="endDate" required min={minDate} />
+              </div>
             </div>
           </div>
           {/**----reason------ */}
           <div>
-             <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-700 mb-2">
               Reason
             </label>
-            <textarea name="reason" required rows={3} className="resize-none" placeholder="Briefy describe why you need this leave..."></textarea>
+            <textarea
+              name="reason"
+              required
+              rows={3}
+              className="resize-none"
+              placeholder="Briefy describe why you need this leave..."
+            ></textarea>
           </div>
           {/**----buttons------ */}
           <div className="flex gap-3 pt-2">
-            <button onClick={onClose} type="button" className="btn-secondary flex-1">
+            <button
+              onClick={onClose}
+              type="button"
+              className="btn-secondary flex-1"
+            >
               Cancel
             </button>
-             <button disabled={loading}type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2">
-
-              {loading ? <Loader2 className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4"/>}
-              {loading ? "Submitting...": "Submit"}
+            <button
+              disabled={loading}
+              type="submit"
+              className="btn-primary flex-1 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+              {loading ? "Submitting..." : "Submit"}
             </button>
           </div>
-         </form>
+        </form>
       </div>
     </div>
   );

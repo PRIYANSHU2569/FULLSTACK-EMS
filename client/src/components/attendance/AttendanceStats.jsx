@@ -26,7 +26,9 @@ const AttendanceStats = ({ history }) => {
           </div>
           <div>
             <p className="text-sm text-slate-500">{s.label}</p>
-            <p className="text-2xl font-medium text-slate-900 tracking-tight">{s.value}</p>
+            <p className="text-2xl font-medium text-slate-900 tracking-tight">
+              {s.value}
+            </p>
           </div>
         </div>
       ))}
