@@ -255,8 +255,8 @@ if (absentEmployees.length > 0) {
         `,
       })
     );
-
-    return Promise.all(emailPromises);
+    await  Promise.all(emailPromises);
+    return {emailsSent : absentEmployees.length}
   });
 }
     
