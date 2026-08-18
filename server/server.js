@@ -10,6 +10,7 @@ import atttendanceRouter from "./routes/attendanceRoutes.js";
 import leaveRouter from "./routes/leaveRoutes.js";
 import payslipRouter from "./routes/payslipsRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
+import emailRouter from "./routes/emailRoutes.js";
 import { serve } from "inngest/express";
 import { inngest, functions } from "./inngest/index.js"
 
@@ -32,6 +33,7 @@ app.use("/api/attendance" , atttendanceRouter)
 app.use("/api/leave" , leaveRouter)
 app.use("/api/payslips" , payslipRouter)
 app.use("/api/dashboard", dashboardRouter)
+app.use("/api/email", emailRouter)
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
 

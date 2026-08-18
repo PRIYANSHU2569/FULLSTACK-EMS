@@ -37,7 +37,7 @@ const autoCheckOut = inngest.createFunction(
       // Get employee data
       const employee = await Employee.findById(employeeId);
       // TODO: Send reminder email to employee
-      await sendEmail({
+      await step.run("send-checkout-reminder-email", async () => sendEmail({
         to: employee.email,
         subject: "Attendence Check-Out Remainder",
         body: `
@@ -52,7 +52,7 @@ const autoCheckOut = inngest.createFunction(
                     <p style="font-size: 16px;">EMS</p>
                 </div>
             `,
-      });
+      }));
 
       // Wait another 1 hour
       await step.sleepUntil(
@@ -114,7 +114,7 @@ const leaveApplicationReminder = inngest.createFunction(
 
     if (leaveApplication?.status === "PENDING") {
      const employee = await Employee.findById(leaveApplication.employeeId);
-      await sendEmail({
+      await step.run("send-pending-leave-reminder-email", async () => sendEmail({
         to: process.env.ADMIN_EMAIL,
         subject: `Leave Application Remainder`,
         body:`
@@ -128,7 +128,7 @@ const leaveApplicationReminder = inngest.createFunction(
                 <p style="font-size: 16px;">EMS</p>
             </div>
         `
-      })
+      }))
     }
   },
 );
