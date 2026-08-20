@@ -19,10 +19,9 @@ const Leave = () => {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
- 
+
   const [isDeleted, setIsDeleted] = useState(false);
   const isAdmin = user?.role === "ADMIN";
- 
 
   const fetchLeaves = useCallback(async () => {
     try {
@@ -66,12 +65,12 @@ const Leave = () => {
               : "Your leave history and requests"}
           </p>
         </div>
-        {!isAdmin &&  (
+        {!isAdmin && (
           <button
-           onClick={() => {
-    console.log("APPLY BUTTON CLICKED");
-    setShowModal(true);
-  }}
+            onClick={() => {
+              console.log("APPLY BUTTON CLICKED");
+              setShowModal(true);
+            }}
             className="btn-primary flex items-center gap-2 w-full sm:w-auto justify-center"
           >
             <PlusIcon className="h-4 w-4" />
